@@ -1,12 +1,6 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
+#![allow(dead_code)]
 
-use ndarray::{Array2, Shape};
+use ndarray::Array2;
 
 /// An instance of Conway's Game of Life.
 pub struct Game {
@@ -30,14 +24,10 @@ impl Game {
         }
     }
 
-    pub fn set(&mut self, alive: Vec<[usize; 2]>) {
+    pub fn set_on(&mut self, alive: Vec<[usize; 2]>) {
         for coord in alive {
             self.grid[0][coord] = 1;
         }
-    }
-
-    fn front_mut<'a>(&'a mut self) -> &'a mut Array2<u8> {
-        &mut self.grid[self.front as usize]
     }
 
     fn back_mut<'a>(&'a mut self) -> &mut Array2<u8> {
@@ -100,4 +90,15 @@ impl Game {
             }
         }
     }
+}
+
+#[test]
+pub fn state_change() {
+    let mut game = Game::new(3, 3, false);
+    // a vertical column of length 3
+    game.set_on(vec![[1, 0], [1, 1], [1, 2]]);
+    game.step();
+    assert_eq!(game.front().row(0).to_slice().unwrap(), &[0, 0, 0]);
+    assert_eq!(game.front().row(1).to_slice().unwrap(), &[1, 1, 1]);
+    assert_eq!(game.front().row(2).to_slice().unwrap(), &[0, 0, 0]);
 }
