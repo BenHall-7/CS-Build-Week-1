@@ -26,7 +26,7 @@ impl Game {
 
     pub fn set_on(&mut self, alive: Vec<[usize; 2]>) {
         for coord in alive {
-            self.grid[0][coord] = 1;
+            self.grid[self.front as usize][coord] = 1;
         }
     }
 
@@ -89,6 +89,7 @@ impl Game {
                 self.update_cell([x ,y]);
             }
         }
+        self.front = 1 - self.front;
     }
 }
 
@@ -97,6 +98,10 @@ pub fn state_change() {
     let mut game = Game::new(3, 3, false);
     // a vertical column of length 3
     game.set_on(vec![[1, 0], [1, 1], [1, 2]]);
+    game.step();
+    assert_eq!(game.front().row(0).to_slice().unwrap(), &[0, 1, 0]);
+    assert_eq!(game.front().row(1).to_slice().unwrap(), &[0, 1, 0]);
+    assert_eq!(game.front().row(2).to_slice().unwrap(), &[0, 1, 0]);
     game.step();
     assert_eq!(game.front().row(0).to_slice().unwrap(), &[0, 0, 0]);
     assert_eq!(game.front().row(1).to_slice().unwrap(), &[1, 1, 1]);
