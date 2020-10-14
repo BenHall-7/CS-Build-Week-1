@@ -15,8 +15,8 @@ pub struct Game {
 
 impl Game {
     pub fn new(width: usize, height: usize, repeating: bool) -> Self {
-        let array0 = Array2::zeros((width, height));
-        let array1 = Array2::zeros((width, height));
+        let array0 = Array2::zeros((height, width));
+        let array1 = Array2::zeros((height, width));
         Game {
             grid: [array0, array1],
             front: 0,
@@ -26,7 +26,8 @@ impl Game {
 
     pub fn set_on(&mut self, alive: Vec<[usize; 2]>) {
         for coord in alive {
-            self.grid[self.front as usize][coord] = 1;
+            let inverted = [coord[1], coord[0]];
+            self.grid[self.front as usize][inverted] = 1;
         }
     }
 
@@ -56,16 +57,16 @@ impl Game {
         // TODO: handle repeating case
         
         let mut neighbors = 0;
-        let (x, y) = (coord[0], coord[1]);
+        let (x, y) = (coord[1], coord[0]);
         // representing if we have a neighbor in X direction:
-        let left = x != 0;
-        let right = x != front.ncols() - 1;
-        let top = y != 0;
-        let bottom = y != front.nrows() - 1;
+        let left = x > 0;
+        let right = x < front.ncols() - 1;
+        let top = y > 0;
+        let bottom = y < front.nrows() - 1;
 
         macro_rules! check_coord {
             ($x:expr, $y:expr) => {
-                if front[[$x, $y]] != 0 { neighbors += 1; }
+                if front[[$y, $x]] != 0 { neighbors += 1; }
             }
         }
         
@@ -86,7 +87,7 @@ impl Game {
         let rows = self.back().nrows();
         for x in 0..cols {
             for y in 0..rows {
-                self.update_cell([x ,y]);
+                self.update_cell([y, x]);
             }
         }
         self.front = 1 - self.front;
@@ -94,16 +95,16 @@ impl Game {
 }
 
 #[test]
-pub fn state_change() {
-    let mut game = Game::new(3, 3, false);
+fn test_blinker() {
+    let mut game = Game::new(3, 4, false);
     // a vertical column of length 3
     game.set_on(vec![[1, 0], [1, 1], [1, 2]]);
     game.step();
-    assert_eq!(game.front().row(0).to_slice().unwrap(), &[0, 1, 0]);
-    assert_eq!(game.front().row(1).to_slice().unwrap(), &[0, 1, 0]);
-    assert_eq!(game.front().row(2).to_slice().unwrap(), &[0, 1, 0]);
+    assert_eq!(game.front().row(0).to_slice(), Some([0, 0, 0].as_ref()));
+    assert_eq!(game.front().row(1).to_slice(), Some([1, 1, 1].as_ref()));
+    assert_eq!(game.front().row(2).to_slice(), Some([0, 0, 0].as_ref()));
     game.step();
-    assert_eq!(game.front().row(0).to_slice().unwrap(), &[0, 0, 0]);
-    assert_eq!(game.front().row(1).to_slice().unwrap(), &[1, 1, 1]);
-    assert_eq!(game.front().row(2).to_slice().unwrap(), &[0, 0, 0]);
+    assert_eq!(game.front().row(0).to_slice(), Some([0, 1, 0].as_ref()));
+    assert_eq!(game.front().row(1).to_slice(), Some([0, 1, 0].as_ref()));
+    assert_eq!(game.front().row(2).to_slice(), Some([0, 1, 0].as_ref()));
 }
