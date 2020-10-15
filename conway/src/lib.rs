@@ -79,7 +79,7 @@ impl Game {
         if bottom { check_coord!(x, y + 1) }
         if bottom && left { check_coord!(x - 1, y + 1) }
 
-        self.back_mut()[coord] = Self::alive(front[coord] != 0, neighbors) as u8;
+        self.back_mut()[[y, x]] = Self::alive(front[coord] != 0, neighbors) as u8;
     }
 
     pub fn step(&mut self) {
@@ -96,8 +96,7 @@ impl Game {
 
 #[test]
 fn test_blinker() {
-    let mut game = Game::new(3, 4, false);
-    // a vertical column of length 3
+    let mut game = Game::new(3, 3, false);
     game.set_on(vec![[1, 0], [1, 1], [1, 2]]);
     game.step();
     assert_eq!(game.front().row(0).to_slice(), Some([0, 0, 0].as_ref()));
@@ -107,4 +106,34 @@ fn test_blinker() {
     assert_eq!(game.front().row(0).to_slice(), Some([0, 1, 0].as_ref()));
     assert_eq!(game.front().row(1).to_slice(), Some([0, 1, 0].as_ref()));
     assert_eq!(game.front().row(2).to_slice(), Some([0, 1, 0].as_ref()));
+}
+
+#[test]
+fn test_glider() {
+    let mut game = Game::new(4, 4, false);
+    // 0 1 0 0
+    // 0 0 1 0
+    // 1 1 1 0
+    // 0 0 0 0
+    game.set_on(vec![[1, 0], [2, 1], [0, 2], [1, 2], [2, 2]]);
+    game.step();
+    assert_eq!(game.front().row(0).to_slice(), Some([0, 0, 0, 0].as_ref()));
+    assert_eq!(game.front().row(1).to_slice(), Some([1, 0, 1, 0].as_ref()));
+    assert_eq!(game.front().row(2).to_slice(), Some([0, 1, 1, 0].as_ref()));
+    assert_eq!(game.front().row(3).to_slice(), Some([0, 1, 0, 0].as_ref()));
+    game.step();
+    assert_eq!(game.front().row(0).to_slice(), Some([0, 0, 0, 0].as_ref()));
+    assert_eq!(game.front().row(1).to_slice(), Some([0, 0, 1, 0].as_ref()));
+    assert_eq!(game.front().row(2).to_slice(), Some([1, 0, 1, 0].as_ref()));
+    assert_eq!(game.front().row(3).to_slice(), Some([0, 1, 1, 0].as_ref()));
+    game.step();
+    assert_eq!(game.front().row(0).to_slice(), Some([0, 0, 0, 0].as_ref()));
+    assert_eq!(game.front().row(1).to_slice(), Some([0, 1, 0, 0].as_ref()));
+    assert_eq!(game.front().row(2).to_slice(), Some([0, 0, 1, 1].as_ref()));
+    assert_eq!(game.front().row(3).to_slice(), Some([0, 1, 1, 0].as_ref()));
+    game.step();
+    assert_eq!(game.front().row(0).to_slice(), Some([0, 0, 0, 0].as_ref()));
+    assert_eq!(game.front().row(1).to_slice(), Some([0, 0, 1, 0].as_ref()));
+    assert_eq!(game.front().row(2).to_slice(), Some([0, 0, 0, 1].as_ref()));
+    assert_eq!(game.front().row(3).to_slice(), Some([0, 1, 1, 1].as_ref()));
 }
