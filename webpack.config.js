@@ -7,8 +7,8 @@ module.exports = (env, argv) => {
     entry: './bootstrap.js',
     output: {
       path: distPath,
-      filename: "conway/conway.js",
-      webassemblyModuleFilename: "conway/conway.wasm"
+      filename: "js/conway.js",
+      webassemblyModuleFilename: "js/conway.wasm"
     },
     plugins: [
       new WasmPackPlugin({
