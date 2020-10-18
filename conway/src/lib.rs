@@ -11,6 +11,8 @@ pub struct Game {
     front: u8,
     /// Determines if the top-and-bottom and left-and-right borders are considered connected
     repeating: bool,
+    width: usize,
+    height: usize,
 }
 
 impl Game {
@@ -20,26 +22,42 @@ impl Game {
         Game {
             grid: [array0, array1],
             front: 0,
-            repeating
+            repeating,
+            width,
+            height
         }
     }
 
     pub fn set_on(&mut self, alive: Vec<[usize; 2]>) {
         for coord in alive {
-            let inverted = [coord[1], coord[0]];
-            self.grid[self.front as usize][inverted] = 1;
+            self.grid[self.front as usize][coord] = 1;
         }
     }
 
-    fn back_mut<'a>(&'a mut self) -> &mut Array2<u8> {
+    pub fn set_off(&mut self, alive: Vec<[usize; 2]>) {
+        for coord in alive {
+            self.grid[self.front as usize][coord] = 0;
+        }
+    }
+
+    pub fn clear(&mut self) {
+        *self = Game::new(self.width, self.height, self.repeating)
+    }
+
+    // TODO:
+    // pub fn resize(&mut self, width: usize, height: usize) {
+
+    // }
+
+    pub fn back_mut<'a>(&'a mut self) -> &mut Array2<u8> {
         &mut self.grid[1 - self.front as usize]
     }
 
-    fn front<'a>(&'a self) -> &'a Array2<u8> {
+    pub fn front<'a>(&'a self) -> &'a Array2<u8> {
         &self.grid[self.front as usize]
     }
     
-    fn back<'a>(&'a self) -> &'a Array2<u8> {
+    pub fn back<'a>(&'a self) -> &'a Array2<u8> {
         &self.grid[1 - self.front as usize]
     }
 
@@ -57,7 +75,7 @@ impl Game {
         // TODO: handle repeating case
         
         let mut neighbors = 0;
-        let (x, y) = (coord[1], coord[0]);
+        let (y, x) = (coord[0], coord[1]);
         // representing if we have a neighbor in X direction:
         let left = x > 0;
         let right = x < front.ncols() - 1;
@@ -65,21 +83,21 @@ impl Game {
         let bottom = y < front.nrows() - 1;
 
         macro_rules! check_coord {
-            ($x:expr, $y:expr) => {
+            ($y:expr, $x:expr) => {
                 if front[[$y, $x]] != 0 { neighbors += 1; }
             }
         }
         
-        if left { check_coord!(x - 1, y) }
-        if left && top { check_coord!(x - 1, y - 1) }
-        if top { check_coord!(x, y - 1) }
-        if top && right { check_coord!(x + 1, y - 1) }
-        if right { check_coord!(x + 1, y) }
-        if right && bottom { check_coord!(x + 1, y + 1) }
-        if bottom { check_coord!(x, y + 1) }
-        if bottom && left { check_coord!(x - 1, y + 1) }
+        if left { check_coord!(y, x - 1) }
+        if left && top { check_coord!(y - 1, x - 1) }
+        if top { check_coord!(y - 1, x) }
+        if top && right { check_coord!(y - 1, x + 1) }
+        if right { check_coord!(y, x + 1) }
+        if right && bottom { check_coord!(y + 1, x + 1) }
+        if bottom { check_coord!(y + 1, x) }
+        if bottom && left { check_coord!(y + 1, x - 1) }
 
-        self.back_mut()[[y, x]] = Self::alive(front[coord] != 0, neighbors) as u8;
+        self.back_mut()[coord] = Self::alive(front[coord] != 0, neighbors) as u8;
     }
 
     pub fn step(&mut self) {
@@ -97,7 +115,7 @@ impl Game {
 #[test]
 fn test_blinker() {
     let mut game = Game::new(3, 3, false);
-    game.set_on(vec![[1, 0], [1, 1], [1, 2]]);
+    game.set_on(vec![[0, 1], [1, 1], [2, 1]]);
     game.step();
     assert_eq!(game.front().row(0).to_slice(), Some([0, 0, 0].as_ref()));
     assert_eq!(game.front().row(1).to_slice(), Some([1, 1, 1].as_ref()));
@@ -115,7 +133,7 @@ fn test_glider() {
     // 0 0 1 0
     // 1 1 1 0
     // 0 0 0 0
-    game.set_on(vec![[1, 0], [2, 1], [0, 2], [1, 2], [2, 2]]);
+    game.set_on(vec![[0, 1], [1, 2], [2, 0], [2, 1], [2, 2]]);
     game.step();
     assert_eq!(game.front().row(0).to_slice(), Some([0, 0, 0, 0].as_ref()));
     assert_eq!(game.front().row(1).to_slice(), Some([1, 0, 1, 0].as_ref()));
