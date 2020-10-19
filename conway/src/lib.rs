@@ -28,15 +28,26 @@ impl Game {
         }
     }
 
-    pub fn set_on(&mut self, alive: Vec<[usize; 2]>) {
-        for coord in alive {
+    pub fn set_on<I: IntoIterator<Item=[usize; 2]>>(&mut self, cells: I) {
+        for coord in cells {
             self.grid[self.front as usize][coord] = 1;
         }
     }
 
-    pub fn set_off(&mut self, alive: Vec<[usize; 2]>) {
-        for coord in alive {
+    pub fn set_off<I: IntoIterator<Item=[usize; 2]>>(&mut self, cells: I) {
+        for coord in cells {
             self.grid[self.front as usize][coord] = 0;
+        }
+    }
+
+    pub fn invert<I: IntoIterator<Item=[usize; 2]>>(&mut self, cells: I) {
+        for coord in cells {
+            let current = &mut self.grid[self.front as usize][coord];
+            if *current == 0 {
+                *current = 1;
+            } else {
+                *current = 0;
+            }
         }
     }
 
