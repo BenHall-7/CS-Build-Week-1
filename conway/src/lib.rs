@@ -60,15 +60,15 @@ impl Game {
 
     // }
 
-    pub fn back_mut<'a>(&'a mut self) -> &mut Array2<u8> {
+    pub fn back_mut(&mut self) -> &mut Array2<u8> {
         &mut self.grid[1 - self.front as usize]
     }
 
-    pub fn front<'a>(&'a self) -> &'a Array2<u8> {
+    pub fn front(&self) -> &Array2<u8> {
         &self.grid[self.front as usize]
     }
     
-    pub fn back<'a>(&'a self) -> &'a Array2<u8> {
+    pub fn back(&self) -> &Array2<u8> {
         &self.grid[1 - self.front as usize]
     }
 
