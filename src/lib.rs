@@ -65,19 +65,19 @@ impl GameOfLife {
         let width = self.width;
         let height = self.height;
         let size = self.block_size;
-        canvas.set_width((self.width * self.block_size) as u32);
-        canvas.set_height((self.height * self.block_size) as u32);
+        canvas.set_width((width * size) as u32);
+        canvas.set_height((height * size) as u32);
         let context = canvas
             .get_context("2d").unwrap().unwrap()
             .dyn_into::<web_sys::CanvasRenderingContext2d>().unwrap();
+        context.set_fill_style(&JsValue::from(dead_color));
+        context.fill_rect(0.0, 0.0, (width * size) as f64, (height * size) as f64);
+        context.set_fill_style(&JsValue::from(alive_color));
         for row in 0..height {
             for col in 0..width {
                 if self.inner.front()[[row as usize, col as usize]] != 0 {
-                    context.set_fill_style(&JsValue::from(alive_color));
-                } else {
-                    context.set_fill_style(&JsValue::from(dead_color));
+                    context.fill_rect((col * size) as f64, (row * size) as f64, size as f64, size as f64);
                 }
-                context.fill_rect((col * size) as f64, (row * size) as f64, size as f64, size as f64);
             }
         }
     }
